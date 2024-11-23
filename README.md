@@ -26,13 +26,13 @@ Use one of the following commands, replacing `<version>` with your Wireshark ver
 - **Command Prompt (CMD):**
 
 ```cmd
-move .\Plugins-Wireshark\*.lua "C:\Program Files\Wireshark\plugins\<version>\"
+move .\Plugins-Wireshark\src\*.lua "C:\Program Files\Wireshark\plugins\<version>\"
 ```
 
 - **PowerShell:**
 
 ```powershell
-Move-Item -Path .\Plugins-Wireshark\*.lua -Destination "C:\Program Files\Wireshark\plugins\<version>\"
+Move-Item -Path .\Plugins-Wireshark\src\*.lua -Destination "C:\Program Files\Wireshark\plugins\<version>\"
 ```
 
 
@@ -40,7 +40,7 @@ Move-Item -Path .\Plugins-Wireshark\*.lua -Destination "C:\Program Files\Wiresha
 You can use the `whereis wireshark` command to find its location.
 
 ```bash
-mv ./Plugins-Wireshark/*.lua /usr/lib/wireshark/plugins/<version>
+mv ./Plugins-Wireshark/src/*.lua /usr/lib/wireshark/plugins/<version>
 ```
 
 ---
