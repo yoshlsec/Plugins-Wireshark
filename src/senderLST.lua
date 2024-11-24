@@ -3,12 +3,10 @@ local function main()
 
     local bytes_sent = {}
     local tap = Listener.new()
-
     local function remove()
         tap:remove()
     end
-
-    tw:set_atclose(remove) -- Call  remove() to close the window
+    tw:set_atclose(remove)
 
     local function format_bytes(bytes)
         if bytes >= 1073741824 then                         -- >= 1 GB
@@ -23,38 +21,44 @@ local function main()
     end
 
     function tap.packet(pinfo, tvb)
-        local packet_length = tvb:len()
         local src_ip = tostring(pinfo.src)
+        local packet_length = tvb:len()
 
         bytes_sent[src_ip] = (bytes_sent[src_ip] or 0) + packet_length
     end
 
-    local function sorter()
-        local sorted = {}
+    local function get_sorted_ips()
+        local sorted_ips = {}
         for ip, bytes in pairs(bytes_sent) do
-            table.insert(sorted, {ip = ip, bytes = bytes})
+            table.insert(sorted_ips, {ip = ip, bytes = bytes})
         end
-
-        table.sort(sorted, function(a, b) return a.bytes > b.bytes end)
-        return sorted
+        table.sort(sorted_ips, function(a, b) return a.bytes > b.bytes end)
+        return sorted_ips
     end
 
-    -- Refresh the windows per time
-    function tap.draw(t)
+    function tap.draw()
         tw:clear()
-        tw:append("IP Address\t\tData Sent\n==============================================\n")
+        tw:append(string.format("%-30s%-30s\n", "IP Address", "Data Sent"))
+        tw:append(string.rep("=", 40) .. "\n")
 
-        local sorted_ips = sorter()
-        for _, entry in ipairs(sorted_ips) do
-            tw:append(entry.ip .. "\t\t" .. format_bytes(entry.bytes) .. "\n")
+        for _, entry in ipairs(get_sorted_ips()) do
+            tw:append(string.format("%-30s%-30s\n", entry.ip, format_bytes(entry.bytes)))
         end
     end
 
     function tap.reset()
-        tw:clear()
         bytes_sent = {}
+        tw:clear()
     end
+
     retap_packets()
 end
+set_plugin_info({
+    version = "1.0",
+    description = "Organizes the IP data flow from highest to lowest",
+    author = "yoshl",
+    repository = "https://github.com/yoshlsec/Plugins-Wireshark/"
+})
 
+-- Registrar la herramienta en el menú de Wireshark
 register_menu("Sender Sorter", main, MENU_TOOLS_UNSORTED)
