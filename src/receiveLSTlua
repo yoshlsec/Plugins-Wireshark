@@ -1,14 +1,12 @@
 local function main()
-    local tw = TextWindow.new("Data Receive per IP")
+    local tw = TextWindow.new("Data Sent per IP")
 
     local bytes_sent = {}
     local tap = Listener.new()
-
     local function remove()
         tap:remove()
     end
-
-    tw:set_atclose(remove) -- Call remove() to close the window
+    tw:set_atclose(remove)
 
     local function format_bytes(bytes)
         if bytes >= 1073741824 then                         -- >= 1 GB
@@ -23,37 +21,42 @@ local function main()
     end
 
     function tap.packet(pinfo, tvb)
+        local src_ip = tostring(pinfo.src)
         local packet_length = tvb:len()
-        local dst_ip = tostring(pinfo.dst)
 
-        bytes_sent[dst_ip] = (bytes_sent[dst_ip] or 0) + packet_length
+        bytes_sent[src_ip] = (bytes_sent[src_ip] or 0) + packet_length
     end
 
-    local function sorter()
-        local sorted = {}
+    local function get_sorted_ips()
+        local sorted_ips = {}
         for ip, bytes in pairs(bytes_sent) do
-            table.insert(sorted, {ip = ip, bytes = bytes})
+            table.insert(sorted_ips, {ip = ip, bytes = bytes})
         end
-
-        table.sort(sorted, function(a, b) return a.bytes > b.bytes end)
-        return sorted
+        table.sort(sorted_ips, function(a, b) return a.bytes < b.bytes end)
+        return sorted_ips
     end
 
-    -- Refresh the window
-    function tap.draw(t)
+    function tap.draw()
         tw:clear()
-        tw:append("IP Address\t\tData Receive\n==============================================\n")
+        tw:append(string.format("%-30s%-30s\n", "IP Address", "Data Receive"))
+        tw:append(string.rep("=", 42) .. "\n")
 
-        local sorted_ips = sorter()
-        for _, entry in ipairs(sorted_ips) do
-            tw:append(entry.ip .. "\t\t" .. format_bytes(entry.bytes) .. "\n")
+        for _, entry in ipairs(get_sorted_ips()) do
+            tw:append(string.format("%-30s%-30s\n", entry.ip, format_bytes(entry.bytes)))
         end
     end
 
     function tap.reset()
-        tw:clear()
         bytes_sent = {}
+        tw:clear()
     end
+
     retap_packets()
 end
+set_plugin_info({
+    version = "1.0",
+    description = "Organizes the IP data flow from lowest to highest",
+    author = "yoshl",
+    repository = "https://github.com/yoshlsec/Plugins-Wireshark/"
+})
 register_menu("Receiver Sorter", main, MENU_TOOLS_UNSORTED)
