@@ -71,6 +71,8 @@ This will group the plugin under **Tools > Subfolder > IP Sender Sorter**, creat
 
 ![Subfolder Example](https://github.com/user-attachments/assets/31f4179b-6096-483d-87da-5e252a9b4f6f)
 
----
+### **4. Acknowledgement**
+Thanks to a good contributor, fiend and supporter [*2b2*](https://github.com/mouse3) in this small project.
 
+---
 Enjoy the plugins, in a future there will be more :) A star is appreciate 
